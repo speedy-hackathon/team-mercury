@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using covidSim.Models;
 using covidSim.Utils;
 
@@ -8,6 +9,10 @@ namespace covidSim.Services
     {
         private const int MaxDistancePerTurn = 30;
         private static Random random = new Random();
+        private PersonState state = PersonState.AtHome;
+        private int stateAge = 0;
+        private const int TimeToBeBored = 5;
+        public bool IsBored => state == PersonState.AtHome && stateAge >= TimeToBeBored;
         public PersonState state = PersonState.AtHome;
         private HouseCoordinates houseCoordinates;
         private static readonly int CureTime = 45;
@@ -55,6 +60,8 @@ namespace covidSim.Services
 
         public bool ShouldRemove(int currentTick)
         {
+            var oldState = state;
+            switch (state)
             return HealthStatus == PersonHealthStatus.Dead && currentTick > deadAtTick + 10;
         }
 
@@ -71,7 +78,18 @@ namespace covidSim.Services
                 illTick++;
                 if (illTick >= CureTime) HealthStatus = PersonHealthStatus.Healthy;
             }
+
+            UpdateStatusAge(oldState);
         }
+
+        private void UpdateStatusAge(PersonState oldState)
+        {
+            if (oldState == state)
+                stateAge++;
+            else
+                stateAge = 0;
+        }
+
 
         private void CalcNextStepForPersonAtHome()
         {
@@ -97,7 +115,7 @@ namespace covidSim.Services
             var direction = ChooseDirection();
             var delta = new Vec(xLength * direction.X, yLength * direction.Y);
             var nextPosition = new Vec(Position.X + delta.X, Position.Y + delta.Y);
-
+            
             if (isCoordInField(nextPosition))
             {
                 Position = nextPosition;
