@@ -33,23 +33,23 @@ namespace covidSim.Services
 
         private List<Person> CreatePopulation()
         {
-            var illPeoples = (int)Math.Round(IllPeoplePercentage * PeopleCount);
+            var illPeople = (int)Math.Round(IllPeoplePercentage * PeopleCount);
             var doctors = (int)Math.Round(DoctorsPercentage * PeopleCount);
             var people = new List<Person>();
 
-            for (var i = 0; i < illPeoples; i++)
+            for (var i = 0; i < illPeople; i++)
             {
                 people.Add(new Doctor(i,FindHome(),Map, PersonHealthStatus.Ill));
             }
 
             for (var i = 0; i < doctors; i++)
             {
-                people.Add(new Person(i + illPeoples, FindHome(), Map, PersonHealthStatus.Healthy));
+                people.Add(new Person(i + illPeople, FindHome(), Map, PersonHealthStatus.Healthy));
             }
 
-            for (var i = 0; i < PeopleCount - illPeoples - doctors; i++)
+            for (var i = 0; i < PeopleCount - illPeople - doctors; i++)
             {
-                people.Add(new Person(i + illPeoples + doctors, FindHome(), Map, PersonHealthStatus.Healthy));
+                people.Add(new Person(i + illPeople + doctors, FindHome(), Map, PersonHealthStatus.Healthy));
             }
 
             return people;
@@ -94,14 +94,14 @@ namespace covidSim.Services
             var walkingInfected = new List<Person>();
             var allInfected = new List<Person>();
             var doctors = new List<Person>();
-            var personsToRemove = new List<Person>();
+            var peopleToRemove = new List<Person>();
             foreach (var person in People)
             {
                 person.CalcNextStep(currentTick);
 
                 if (person.ShouldRemove(currentTick))
                 {
-                    personsToRemove.Add(person);
+                    peopleToRemove.Add(person);
                     continue;
                 }
 
@@ -121,7 +121,7 @@ namespace covidSim.Services
                 }
             }
             
-            foreach (var person in personsToRemove)
+            foreach (var person in peopleToRemove)
                 People.Remove(person);
             CheckInfections(walkingInfected, walkingNotInfected);
             CheckRecovery(doctors, allInfected);
