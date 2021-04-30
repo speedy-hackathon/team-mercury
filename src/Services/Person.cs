@@ -1,5 +1,6 @@
 using System;
 using covidSim.Models;
+using covidSim.Utils;
 
 namespace covidSim.Services
 {
@@ -22,26 +23,43 @@ namespace covidSim.Services
             Position = new Vec(x, y);
         }
 
-        public int Id;
-        public int HomeId;
+        public readonly int Id;
+        public readonly int HomeId;
         public Vec Position;
-
-        public PersonHealthStatus HealthStatus { get; }
+        public PersonHealthStatus HealthStatus { get; private set; }
         private HouseCoordinates houseCoordinates;
+        private int deadAtTick = 0;
 
-        public void CalcNextStep()
+        public void CalcNextStep(int currentTick)
         {
-            switch (state)
+            UpdateHealthStatus(currentTick);
+
+            if (HealthStatus != PersonHealthStatus.Dead)
+                switch (state)
+                {
+                    case PersonState.AtHome:
+                        CalcNextStepForPersonAtHome();
+                        break;
+                    case PersonState.Walking:
+                        CalcNextPositionForWalkingPerson();
+                        break;
+                    case PersonState.GoingHome:
+                        CalcNextPositionForGoingHomePerson();
+                        break;
+                }
+        }
+
+        public bool ShouldRemove(int currentTick)
+        {
+            return HealthStatus == PersonHealthStatus.Dead && currentTick > deadAtTick + 10;
+        }
+
+        private void UpdateHealthStatus(int currentTick)
+        {
+            if (HealthStatus == PersonHealthStatus.Ill && random.NextBoolWithChance(3, 100000))
             {
-                case PersonState.AtHome:
-                    CalcNextStepForPersonAtHome();
-                    break;
-                case PersonState.Walking:
-                    CalcNextPositionForWalkingPerson();
-                    break;
-                case PersonState.GoingHome:
-                    CalcNextPositionForGoingHomePerson();
-                    break;
+                HealthStatus = PersonHealthStatus.Dead;
+                deadAtTick = currentTick;
             }
         }
 
@@ -113,6 +131,8 @@ namespace covidSim.Services
             state = PersonState.GoingHome;
             CalcNextPositionForGoingHomePerson();
         }
+
+        public override int GetHashCode() => Id;
 
         private Vec ChooseDirection()
         {
