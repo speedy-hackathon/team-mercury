@@ -10,6 +10,7 @@ namespace covidSim.Services
     {
         public HashSet<Person> People;
         public CityMap Map;
+        public Statistic Statistic;
         private DateTime _lastUpdate;
         private int currentTick;
 
@@ -24,6 +25,7 @@ namespace covidSim.Services
 
         private Game()
         {
+            Statistic = new Statistic();
             Map = new CityMap();
             People = CreatePopulation().ToHashSet();
             _lastUpdate = DateTime.Now;
@@ -69,7 +71,7 @@ namespace covidSim.Services
                 var currentTick = Interlocked.Increment(ref this.currentTick);
                 CalcNextStep(currentTick);
             }
-
+            CalcStatistic();
             return this;
         }
 
@@ -93,7 +95,7 @@ namespace covidSim.Services
                 {
                     if (person.HealthStatus == PersonHealthStatus.Ill)
                         walkingInfected.Add(person);
-                    else
+                    else if(person.HealthStatus != PersonHealthStatus.Recovered)
                         walkingNotInfected.Add(person);
                 }
             }
@@ -118,6 +120,29 @@ namespace covidSim.Services
                         notInfected.HealthStatus = PersonHealthStatus.Ill;
                         break;
                     }
+                }
+            }
+        }
+
+        private void CalcStatistic()
+        {
+            Statistic.Reset();
+            foreach (var person in People)
+            {
+                switch (person.HealthStatus)
+                {
+                    case PersonHealthStatus.Healthy:
+                        Statistic.Healthy++;
+                        break;
+                    case PersonHealthStatus.Ill:
+                        Statistic.Ill++;
+                        break;
+                    case PersonHealthStatus.Dead:
+                        Statistic.Dead++;
+                        break;
+                    case PersonHealthStatus.Recovered:
+                        Statistic.Recovered++;
+                        break;
                 }
             }
         }

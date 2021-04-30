@@ -4,6 +4,7 @@
     {
         Healthy,
         Ill,
-        Dead
+        Dead,
+        Recovered
     }
 }
