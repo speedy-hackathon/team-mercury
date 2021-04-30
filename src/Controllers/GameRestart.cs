@@ -8,10 +8,9 @@ namespace covidSim.Controllers
     {
         // GET
         [HttpGet]
-        public bool Index()
+        public void Index()
         {
             Game.Restart();
-            return true;
         }
     }
 }
