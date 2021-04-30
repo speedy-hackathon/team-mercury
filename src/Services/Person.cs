@@ -29,7 +29,6 @@ namespace covidSim.Services
         public Vec Position;
 
         public PersonHealthStatus HealthStatus { get; set; }
-        private HouseCoordinates houseCoordinates;
         private int deadAtTick = 0;
 
         public void CalcNextStep(int currentTick)
