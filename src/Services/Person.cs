@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using covidSim.Models;
+using covidSim.Utils;
 
 namespace covidSim.Services
 {
@@ -8,11 +9,11 @@ namespace covidSim.Services
     {
         private const int MaxDistancePerTurn = 30;
         private static Random random = new Random();
-        private PersonState state = PersonState.AtHome;
         private int stateAge = 0;
         private int Age;
         private const int TimeToBeBored = 5;
         public bool IsBored => state == PersonState.AtHome && stateAge >= TimeToBeBored;
+
         public int Id;
         public int HomeId;
         public Vec Position;
@@ -41,24 +42,50 @@ namespace covidSim.Services
             Age = age;
         }
 
+
         public void CalcNextStep()
         {
             var oldState = state;
             Age++;
             switch (state)
             {
-                case PersonState.AtHome:
-                    CalcNextStepForPersonAtHome();
-                    break;
-                case PersonState.Walking:
-                    CalcNextPositionForWalkingPerson();
-                    break;
-                case PersonState.GoingHome:
-                    CalcNextPositionForGoingHomePerson();
-                    break;
+                var oldState = state;
+                switch (state)
+                {
+                    case PersonState.AtHome:
+                        CalcNextStepForPersonAtHome();
+                        break;
+                    case PersonState.Walking:
+                        CalcNextPositionForWalkingPerson();
+                        break;
+                    case PersonState.GoingHome:
+                        CalcNextPositionForGoingHomePerson();
+                        break;
+                }
+                UpdateStatusAge(oldState);
             }
 
-            UpdateStatusAge(oldState);
+        }
+
+        public bool ShouldRemove(int currentTick)
+        {
+            return HealthStatus == PersonHealthStatus.Dead && currentTick > deadAtTick + 10;
+        }
+
+        private void UpdateHealthStatus(int currentTick)
+        {
+            if (HealthStatus == PersonHealthStatus.Ill)
+            {
+                if (random.NextBoolWithChance(3, 100000))
+                {
+                    HealthStatus = PersonHealthStatus.Dead;
+                    deadAtTick = currentTick;
+                }
+
+                illTick++;
+                if (illTick >= CureTime) HealthStatus = PersonHealthStatus.Healthy;
+            }
+
         }
 
         private void UpdateStatusAge(PersonState oldState)
@@ -141,6 +168,8 @@ namespace covidSim.Services
             state = PersonState.GoingHome;
             CalcNextPositionForGoingHomePerson();
         }
+
+        public override int GetHashCode() => Id;
 
         private Vec ChooseDirection()
         {
