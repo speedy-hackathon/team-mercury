@@ -14,7 +14,6 @@ namespace covidSim.Services
         public Statistic Statistic;
         private DateTime _lastUpdate;
         private int currentTick;
-        private const int InfectionRadius = 7;
     
         private static Game _gameInstance;
         private static Random _random = new Random();
@@ -22,7 +21,6 @@ namespace covidSim.Services
 
         public const double DoctorsPercentage = 0.1;
         public const double IllPeoplePercentage = 0.05;
-        public const double DoctorsPercentage = 0.1;
         public const int PeopleCount = 320;
         public const int FieldWidth = 1000;
         public const int FieldHeight = 500;
@@ -186,6 +184,8 @@ namespace covidSim.Services
                         break;
                 }
             }
+        }
+
         private static bool CanHaveInteraction(int maxdistance, Person personA, Person personB)
         {
             

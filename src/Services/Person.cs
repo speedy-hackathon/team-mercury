@@ -9,7 +9,6 @@ namespace covidSim.Services
     {
         private const int MaxDistancePerTurn = 30;
         private static Random random = new Random();
-        public PersonState state = PersonState.AtHome;
         private int stateAge = 0;
         public PersonType PersonType = PersonType.CommonPerson;
         private int Age;
@@ -48,9 +47,7 @@ namespace covidSim.Services
             Age = age;
         }
 
-        public PersonType PersonType = PersonType.CommonPerson;
 
-        private int deadAtTick = 0;
 
         public void CalcNextStep(int currentTick)
         {
