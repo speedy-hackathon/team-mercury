@@ -6,6 +6,7 @@ import { gameStateUrl, userActionUrl } from "../../consts/urls";
 import errorHandler from "../../utils/errorHandler";
 import Instruction from "../Instruction";
 import { restartGameRequest } from "../api/api";
+import { StatsChart } from "../Chart/Chart";
 
 import "./base.css";
 
@@ -16,6 +17,7 @@ export default class App extends React.Component {
       people: [],
       map: [],
       instructionOpen: true,
+      allStatistic: [],
       isRadiusOn: false,
     };
     this.intervalId = null;
@@ -41,7 +43,8 @@ export default class App extends React.Component {
         </div>
         {instructionOpen && <Instruction onClose={this.closeInstruction} />}
         <h1 className={styles.title}>Симулятор COVID</h1>
-        <Field map={map} people={people} onClick={this.personClick} withInfectionRadius = {isRadiusOn}/>
+        <Field map={map} people={people} onClick={this.personClick} />
+        <StatsChart chartData={this.state.allStatistic} />
       </div>
     );
   }
@@ -76,6 +79,7 @@ export default class App extends React.Component {
         this.setState({
           people: game.people,
           map: game.map.houses.map((i) => i.coordinates.leftTopCorner),
+          allStatistic: [game.statistic, ...this.state.allStatistic]
         });
       });
   };
