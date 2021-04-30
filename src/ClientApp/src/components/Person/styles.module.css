@@ -29,10 +29,6 @@
   background-color: #d2b1e7;
 }
 
-.doctor {
-  background-color: green;
-}
-
 .bored {
   background-color: #2c99d2;
 }
@@ -47,4 +43,8 @@
 
 .recovered {
   background-color: saddlebrown;
+}
+
+.doctor {
+  background-color: green;
 }

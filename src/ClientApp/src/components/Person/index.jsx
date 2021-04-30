@@ -8,18 +8,18 @@ export default function Person({person, onClick, withInfectionRadius}) {
 
     const isDoctor = person.personType === "Doctor";
     const isIll = person.healthStatus === 'Ill';
-    
+
     let req = styles.healthy;
     if (person.isBored) {
         req = styles.bored
     }
 
     if (isIll) req = styles.ill;
-  
+
     return (
       <div className={styles.root} style={{left: `${x}%`, top: `${y}%`}} onClick={() => onClick(person.id)} >
         <div className={withInfectionRadius && isIll ? styles.infectionRadius : ""} />
-        <div className={`${styles.person} ${styles[person.healthStatus.toLowerCase()]} ${req}  ${isDoctor ? styles.doctor : null}`}
+        <div className={`${styles.person} ${styles[person.healthStatus.toLowerCase()]} ${req} ${isDoctor ? styles.doctor : null}`}
         onClick={() => onClick(person.id)} />
       </div>
     );
