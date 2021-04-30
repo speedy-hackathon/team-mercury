@@ -9,15 +9,32 @@ namespace covidSim.Services
     {
         private const int MaxDistancePerTurn = 30;
         private static Random random = new Random();
-        private int stateAge = 0;
-        private const int TimeToBeBored = 5;
-        public bool IsBored => state == PersonState.AtHome && stateAge >= TimeToBeBored;
         public PersonState state = PersonState.AtHome;
-        private HouseCoordinates houseCoordinates;
-        private static readonly int CureTime = 45;
+        private int stateAge = 0;
+        public PersonType PersonType = PersonType.CommonPerson;
+        private int Age;
+        private const int TimeToBeBored = 5;
+        private const int CureTime = 45;
+        public PersonState state { get; private set; }
+        private int deadAtTick;
         private int illTick;
+        public bool IsBored => state == PersonState.AtHome && stateAge >= TimeToBeBored;
 
-        public Person(int id, int homeId, CityMap map, PersonHealthStatus healthStatus)
+        public int Id;
+        public int HomeId;
+        public Vec Position;
+        private static readonly int minAge = 0;
+        private static readonly int maxAge = 70;
+        public PersonHealthStatus HealthStatus { get; set; }
+        private HouseCoordinates houseCoordinates;
+
+
+        public Person(int id, int homeId, CityMap map, PersonHealthStatus healthStatus) : this(id, homeId, map,
+            healthStatus, random.Next(minAge, maxAge))
+        {
+        }
+
+        public Person(int id, int homeId, CityMap map, PersonHealthStatus healthStatus, int age)
         {
             Id = id;
             HomeId = homeId;
@@ -28,37 +45,28 @@ namespace covidSim.Services
             var x = homeCoords.X + random.Next(HouseCoordinates.Width);
             var y = homeCoords.Y + random.Next(HouseCoordinates.Height);
             Position = new Vec(x, y);
+            Age = age;
         }
 
-        public readonly int Id;
-        public readonly int HomeId;
-        public Vec Position;
-
-        public PersonHealthStatus HealthStatus { get; set; }
-        private int deadAtTick = 0;
 
         public void CalcNextStep(int currentTick)
         {
             UpdateHealthStatus(currentTick);
-
-            if (HealthStatus != PersonHealthStatus.Dead)
+            Age++;
+            var oldState = state;
+            switch (state)
             {
-                var oldState = state;
-                switch (state)
-                {
-                    case PersonState.AtHome:
-                        CalcNextStepForPersonAtHome();
-                        break;
-                    case PersonState.Walking:
-                        CalcNextPositionForWalkingPerson();
-                        break;
-                    case PersonState.GoingHome:
-                        CalcNextPositionForGoingHomePerson();
-                        break;
-                }
-                UpdateStatusAge(oldState);
+                case PersonState.AtHome:
+                    CalcNextStepForPersonAtHome();
+                    break;
+                case PersonState.Walking:
+                    CalcNextPositionForWalkingPerson();
+                    break;
+                case PersonState.GoingHome:
+                    CalcNextPositionForGoingHomePerson();
+                    break;
             }
-
+            UpdateStatusAge(oldState);
         }
 
         public bool ShouldRemove(int currentTick)
@@ -77,7 +85,8 @@ namespace covidSim.Services
                 }
 
                 illTick++;
-                if (illTick >= CureTime) HealthStatus = PersonHealthStatus.Healthy;
+                if (illTick >= CureTime) 
+                    HealthStatus = PersonHealthStatus.Healthy;
             }
 
         }
@@ -115,7 +124,7 @@ namespace covidSim.Services
             var direction = ChooseDirection();
             var delta = new Vec(xLength * direction.X, yLength * direction.Y);
             var nextPosition = new Vec(Position.X + delta.X, Position.Y + delta.Y);
-            
+
             if (isCoordInField(nextPosition))
             {
                 Position = nextPosition;
