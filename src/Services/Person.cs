@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using covidSim.Models;
 
 namespace covidSim.Services
@@ -8,8 +9,9 @@ namespace covidSim.Services
         private const int MaxDistancePerTurn = 30;
         private static Random random = new Random();
         private PersonState state = PersonState.AtHome;
-        private int stateDuration = 0;
-        public bool IsBored => state == PersonState.AtHome && stateDuration >= 5;
+        private int stateAge = 0;
+        private const int TimeToBeBored = 5;
+        public bool IsBored => state == PersonState.AtHome && stateAge >= TimeToBeBored;
 
         public Person(int id, int homeId, CityMap map, PersonHealthStatus healthStatus)
         {
@@ -33,6 +35,7 @@ namespace covidSim.Services
 
         public void CalcNextStep()
         {
+            var oldState = state;
             switch (state)
             {
                 case PersonState.AtHome:
@@ -45,8 +48,18 @@ namespace covidSim.Services
                     CalcNextPositionForGoingHomePerson();
                     break;
             }
+
+            UpdateStatusAge(oldState);
         }
-        
+
+        private void UpdateStatusAge(PersonState oldState)
+        {
+            if (oldState == state)
+                stateAge++;
+            else
+                stateAge = 0;
+        }
+
 
         private void CalcNextStepForPersonAtHome()
         {
@@ -56,11 +69,9 @@ namespace covidSim.Services
                 var x = random.Next(houseCoordinates.LeftTopCorner.X, houseCoordinates.LeftTopCorner.X + HouseCoordinates.Height);
                 var y = random.Next(houseCoordinates.LeftTopCorner.Y, houseCoordinates.LeftTopCorner.Y + HouseCoordinates.Width);
                 Position = new Vec(x, y);
-                stateDuration++;
                 return;
             }
 
-            stateDuration = 0;
             state = PersonState.Walking;
             CalcNextPositionForWalkingPerson();
         }
@@ -72,7 +83,6 @@ namespace covidSim.Services
             var direction = ChooseDirection();
             var delta = new Vec(xLength * direction.X, yLength * direction.Y);
             var nextPosition = new Vec(Position.X + delta.X, Position.Y + delta.Y);
-            stateDuration++;
             
             if (isCoordInField(nextPosition))
             {
@@ -100,11 +110,9 @@ namespace covidSim.Services
             {
                 Position = homeCenter;
                 state = PersonState.AtHome;
-                stateDuration = 0;
                 return;
             }
 
-            stateDuration++;
             var direction = new Vec(Math.Sign(xDiff), Math.Sign(yDiff));
 
             var xLength = Math.Min(xDistance, MaxDistancePerTurn); 
