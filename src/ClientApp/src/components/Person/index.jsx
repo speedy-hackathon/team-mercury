@@ -7,7 +7,7 @@ export default function Person({ person, onClick }) {
   const y = (person.position.y / MAX_HEIGHT) * 100;
   return (
     <div
-      className={styles.root}
+      className={`${styles.root} ${person.healthStatus}`}
       style={{ left: `${x}%`, top: `${y}%` }}
       onClick={() => onClick(person.id)}
     />
