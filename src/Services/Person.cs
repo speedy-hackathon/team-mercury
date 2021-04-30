@@ -8,8 +8,9 @@ namespace covidSim.Services
     {
         private const int MaxDistancePerTurn = 30;
         private static Random random = new Random();
-        private PersonState state = PersonState.AtHome;
+        public PersonState state = PersonState.AtHome;
         private int stateAge = 0;
+        public PersonType PersonType = PersonType.CommonPerson;
         private int Age;
         private const int TimeToBeBored = 5;
         public bool IsBored => state == PersonState.AtHome && stateAge >= TimeToBeBored;
@@ -18,7 +19,7 @@ namespace covidSim.Services
         public Vec Position;
         private static readonly int minAge = 0;
         private static readonly int maxAge = 70;
-        public PersonHealthStatus HealthStatus { get; }
+        public PersonHealthStatus HealthStatus { get; set; }
         private HouseCoordinates houseCoordinates;
 
 
