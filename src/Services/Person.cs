@@ -48,6 +48,9 @@ namespace covidSim.Services
             Age = age;
         }
 
+        public PersonType PersonType = PersonType.CommonPerson;
+
+        private int deadAtTick = 0;
 
         public void CalcNextStep(int currentTick)
         {
