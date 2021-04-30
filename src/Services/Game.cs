@@ -40,6 +40,11 @@ namespace covidSim.Services
                 .ToList();
         }
 
+        public static void Restart()
+        {
+            _gameInstance = new Game();
+        }
+
         private int FindHome()
         {
             while (true)
