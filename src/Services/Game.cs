@@ -110,10 +110,8 @@ namespace covidSim.Services
                 {
                     if (person.HealthStatus == PersonHealthStatus.Ill)
                         walkingInfected.Add(person);
-                    }
+                    
                     else if (!(person is Doctor))
-                    {
-                    else
                         walkingNotInfected.Add(person);
                 }
                 if (person.HealthStatus == PersonHealthStatus.Ill)
@@ -123,11 +121,11 @@ namespace covidSim.Services
                     doctors.Add(person);
                 }
             }
-            CheckInfections(walkingInfected, walkingNotInfected);
-            CheckRecovery(doctors, allInfected);
+            
             foreach (var person in personsToRemove)
                 People.Remove(person);
             CheckInfections(walkingInfected, walkingNotInfected);
+            CheckRecovery(doctors, allInfected);
         }
 
         private void CheckRecovery(List<Person> doctors, List<Person> allInfected)
@@ -141,25 +139,23 @@ namespace covidSim.Services
                 }
             }
         }
-
-        private void CheckInfections(List<Person> walkingInfected, List<Person> walkingNotInfected)
+        
         private static void CheckInfections(List<Person> walkingInfected, List<Person> walkingNotInfected)
         {
             foreach (var notInfected in walkingNotInfected)
+            foreach (var infected in walkingInfected)
             {
-                foreach (var infected in walkingInfected)
+                if (CanHaveInteraction(7, notInfected, infected) 
+                    && _random.Next(0, 2) == 1)
                 {
-                    if (CanHaveInteraction(7, notInfected, infected) 
-                        && _random.Next(0, 2) == 1)
-                    {
-                        notInfected.HealthStatus = PersonHealthStatus.Ill;
-                        break;
-                    }
+                    notInfected.HealthStatus = PersonHealthStatus.Ill;
+                    break;
+                    
                 }
             }
         }
 
-        private bool CanHaveInteraction(int maxdistance, Person personA, Person personB)
+        private static bool CanHaveInteraction(int maxdistance, Person personA, Person personB)
         {
             
             var distance = Math.Sqrt((personA.Position.X - personB.Position.X) 
