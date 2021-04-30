@@ -32,7 +32,6 @@ namespace covidSim.Services
             Id = id;
             HomeId = homeId;
             HealthStatus = healthStatus;
-            Age = random.Next(minAge, maxAge);
 
             var homeCoords = map.Houses[homeId].Coordinates.LeftTopCorner;
             houseCoordinates = map.Houses[homeId].Coordinates;
