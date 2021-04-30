@@ -8,11 +8,7 @@ namespace covidSim.Services
     {
         public Doctor(int id, int homeId, CityMap map, PersonHealthStatus healthStatus) : base(id, homeId, map, healthStatus)
         {
-            this.PersonType = PersonType;
-        }
-
-        public Doctor(int id, int homeId, CityMap map, PersonHealthStatus healthStatus, int age) : base(id, homeId, map, healthStatus, age)
-        {
+            this.PersonType = PersonType.Doctor;
         }
     }
 }
