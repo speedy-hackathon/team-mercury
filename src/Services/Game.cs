@@ -41,6 +41,11 @@ namespace covidSim.Services
                     illPeoples-- > 0 ? PersonHealthStatus.Ill : PersonHealthStatus.Healthy));
         }
 
+        public static void Restart()
+        {
+            _gameInstance = new Game();
+        }
+
         private int FindHome()
         {
             while (true)
@@ -71,17 +76,50 @@ namespace covidSim.Services
         private void CalcNextStep(int currentTick)
         {
             _lastUpdate = DateTime.Now;
+            var walkingNotInfected = new List<Person>();
+            var walkingInfected = new List<Person>();
             var personsToRemove = new List<Person>();
             foreach (var person in People)
             {
                 person.CalcNextStep(currentTick);
 
                 if (person.ShouldRemove(currentTick))
+                {
                     personsToRemove.Add(person);
+                    continue;
+                }
+
+                if (person.state == PersonState.Walking)
+                {
+                    if (person.HealthStatus == PersonHealthStatus.Ill)
+                        walkingInfected.Add(person);
+                    else
+                        walkingNotInfected.Add(person);
+                }
             }
 
             foreach (var person in personsToRemove)
                 People.Remove(person);
+            CheckInfections(walkingInfected, walkingNotInfected);
+        }
+
+        private static void CheckInfections(List<Person> walkingInfected, List<Person> walkingNotInfected)
+        {
+            foreach (var notInfected in walkingNotInfected)
+            {
+                foreach (var infected in walkingInfected)
+                {
+                    var distance = Math.Sqrt((notInfected.Position.X - infected.Position.X) 
+                                             * (notInfected.Position.X - infected.Position.X) +
+                                             (notInfected.Position.Y - infected.Position.Y) * 
+                                             (notInfected.Position.Y - infected.Position.Y));
+                    if (distance <= 7 && _random.Next(0, 2) == 1)
+                    {
+                        notInfected.HealthStatus = PersonHealthStatus.Ill;
+                        break;
+                    }
+                }
+            }
         }
     }
 }
