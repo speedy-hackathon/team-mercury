@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using covidSim.Models;
+using covidSim.Utils;
 
 namespace covidSim.Services
 {
@@ -12,13 +13,15 @@ namespace covidSim.Services
         public CityMap Map;
         private DateTime _lastUpdate;
         private int currentTick;
-
+        private const int InfectionRadius = 7;
+    
         private static Game _gameInstance;
         private static Random _random = new Random();
         private const int InfectionRadius = 7;
 
         public const double DoctorsPercentage = 0.1;
         public const double IllPeoplePercentage = 0.05;
+        public const double DoctorsPercentage = 0.1;
         public const int PeopleCount = 320;
         public const int FieldWidth = 1000;
         public const int FieldHeight = 500;
@@ -35,6 +38,7 @@ namespace covidSim.Services
 
         private IEnumerable<Person> CreatePopulation()
         {
+
             var illPeople = (int)Math.Round(IllPeoplePercentage * PeopleCount);
             var doctors = (int)Math.Round(DoctorsPercentage * PeopleCount);
             var people = new List<Person>();
@@ -96,6 +100,7 @@ namespace covidSim.Services
             var walkingInfected = new List<Person>();
             var allInfected = new List<Person>();
             var doctors = new List<Person>();
+
             var peopleToRemove = new List<Person>();
             foreach (var person in People)
             {
@@ -123,6 +128,7 @@ namespace covidSim.Services
                 }
             }
             
+
             foreach (var person in peopleToRemove)
                 People.Remove(person);
             CheckInfections(walkingInfected, walkingNotInfected);
