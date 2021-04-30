@@ -1,13 +1,28 @@
-.root {
+.person,
+.infectionRadius {
   position: absolute;
   box-sizing: border-box;
+  border-radius: 50%;
+}
+
+.root {
+  position: absolute;
+  transition: all 1s linear;
+}
+
+.person {
   width: 14px;
   height: 14px;
-  margin-left: -7px;
-  margin-top: -7px;
   border: 1px solid darkmagenta;
-  border-radius: 50%;
-  transition: all 1s linear;
+}
+
+.infectionRadius {
+  width: 98px;
+  height: 98px;
+  margin-left: -42px;
+  margin-top: -42px;
+  background-color: rgba(255, 187, 123, 0.1);
+  border: 1px solid rgb(255, 153, 58);
 }
 
 .healthy {
