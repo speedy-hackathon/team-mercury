@@ -18,6 +18,7 @@ export default class App extends React.Component {
       map: [],
       instructionOpen: true,
       allStatistic: [],
+      isRadiusOn: false,
     };
     this.intervalId = null;
   }
@@ -28,12 +29,18 @@ export default class App extends React.Component {
     }
   }
 
+  changeRadiusStatus(value) {
+    this.setState({isRadiusOn: value});
+  }
+
   render() {
-    console.log(this.state);
-    const { people, map, instructionOpen } = this.state;
+    const { people, map, instructionOpen, isRadiusOn} = this.state;
     return (
       <div className={styles.root}>
-        <button className={styles.restartGame} onClick={restartGameRequest}>Начать сначала</button>
+        <div className={styles.optionsPanel}>
+          <button className={styles.restartGame} onClick={restartGameRequest}>Начать сначала</button>
+          <label>Показать радиус заражения<input type="checkbox" onChange={(e) => this.changeRadiusStatus(e.currentTarget.checked)}/></label>
+        </div>
         {instructionOpen && <Instruction onClose={this.closeInstruction} />}
         <h1 className={styles.title}>Симулятор COVID</h1>
         <Field map={map} people={people} onClick={this.personClick} />
