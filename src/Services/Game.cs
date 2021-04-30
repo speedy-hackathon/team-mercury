@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Internal;
+using covidSim.Models;
 
 namespace covidSim.Services
 {
@@ -13,7 +14,8 @@ namespace covidSim.Services
 
         private static Game _gameInstance;
         private static Random _random = new Random();
-        
+
+        public const double IllPeoplePercentage = 0.05;
         public const int PeopleCount = 320;
         public const int FieldWidth = 1000;
         public const int FieldHeight = 500;
@@ -30,9 +32,12 @@ namespace covidSim.Services
 
         private List<Person> CreatePopulation()
         {
+            var illPeoples = Math.Round(IllPeoplePercentage * PeopleCount);
+
             return Enumerable
-                .Repeat(0, PeopleCount)
-                .Select((_, index) => new Person(index, FindHome(), Map))
+                .Range(0, PeopleCount)
+                .Select(index => new Person(index, FindHome(), Map,
+                    illPeoples-- > 0 ? PersonHealthStatus.Ill : PersonHealthStatus.Healthy))
                 .ToList();
         }
 
