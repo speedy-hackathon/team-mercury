@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Routing.Internal;
 
 namespace covidSim.Services
 {
@@ -33,6 +34,11 @@ namespace covidSim.Services
                 .Repeat(0, PeopleCount)
                 .Select((_, index) => new Person(index, FindHome(), Map))
                 .ToList();
+        }
+
+        public static void Restart()
+        {
+            _gameInstance = new Game();
         }
 
         private int FindHome()

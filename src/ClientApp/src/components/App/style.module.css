@@ -1,8 +1,13 @@
 .root {
+
 }
 
 .title {
   font-size: 32px;
   font-weight: normal;
   text-align: center;
+}
+
+.restartGame {
+  margin: 0 auto;
 }

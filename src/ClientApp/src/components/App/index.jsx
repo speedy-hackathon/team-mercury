@@ -5,6 +5,8 @@ import { DELAY, MAX_HEIGHT, MAX_WIDTH } from "../../consts/sizes";
 import { gameStateUrl, userActionUrl } from "../../consts/urls";
 import errorHandler from "../../utils/errorHandler";
 import Instruction from "../Instruction";
+import { restartGameRequest } from "../api/api";
+
 
 import "./base.css";
 
@@ -17,6 +19,7 @@ export default class App extends React.Component {
       instructionOpen: true,
     };
     this.intervalId = null;
+    // this.gameRestart = this.gameRestart.bind(this);
   }
 
   componentWillUnmount() {
@@ -25,10 +28,17 @@ export default class App extends React.Component {
     }
   }
 
+  gameRestart() {
+    console.log('sadds')
+    restartGameRequest();
+  }
+
+
   render() {
     const { people, map, instructionOpen } = this.state;
     return (
       <div className={styles.root}>
+        <button className={styles.restartGame} onClick={() => this.gameRestart()}>Начать сначала</button>
         {instructionOpen && <Instruction onClose={this.closeInstruction} />}
         <h1 className={styles.title}>Симулятор COVID</h1>
         <Field map={map} people={people} onClick={this.personClick} />
