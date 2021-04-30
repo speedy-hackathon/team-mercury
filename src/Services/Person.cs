@@ -12,6 +12,10 @@ namespace covidSim.Services
         private int stateAge = 0;
         private int Age;
         private const int TimeToBeBored = 5;
+        private const int CureTime = 45;
+        public PersonState state { get; private set; }
+        private int deadAtTick;
+        private int illTick;
         public bool IsBored => state == PersonState.AtHome && stateAge >= TimeToBeBored;
 
         public int Id;
@@ -19,7 +23,7 @@ namespace covidSim.Services
         public Vec Position;
         private static readonly int minAge = 0;
         private static readonly int maxAge = 70;
-        public PersonHealthStatus HealthStatus { get; }
+        public PersonHealthStatus HealthStatus { get; set; }
         private HouseCoordinates houseCoordinates;
 
 
@@ -43,28 +47,24 @@ namespace covidSim.Services
         }
 
 
-        public void CalcNextStep()
+        public void CalcNextStep(int currentTick)
         {
-            var oldState = state;
+            UpdateHealthStatus(currentTick);
             Age++;
+            var oldState = state;
             switch (state)
             {
-                var oldState = state;
-                switch (state)
-                {
-                    case PersonState.AtHome:
-                        CalcNextStepForPersonAtHome();
-                        break;
-                    case PersonState.Walking:
-                        CalcNextPositionForWalkingPerson();
-                        break;
-                    case PersonState.GoingHome:
-                        CalcNextPositionForGoingHomePerson();
-                        break;
-                }
-                UpdateStatusAge(oldState);
+                case PersonState.AtHome:
+                    CalcNextStepForPersonAtHome();
+                    break;
+                case PersonState.Walking:
+                    CalcNextPositionForWalkingPerson();
+                    break;
+                case PersonState.GoingHome:
+                    CalcNextPositionForGoingHomePerson();
+                    break;
             }
-
+            UpdateStatusAge(oldState);
         }
 
         public bool ShouldRemove(int currentTick)
@@ -83,7 +83,8 @@ namespace covidSim.Services
                 }
 
                 illTick++;
-                if (illTick >= CureTime) HealthStatus = PersonHealthStatus.Healthy;
+                if (illTick >= CureTime) 
+                    HealthStatus = PersonHealthStatus.Healthy;
             }
 
         }
