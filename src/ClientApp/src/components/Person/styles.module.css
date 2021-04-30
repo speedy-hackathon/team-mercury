@@ -3,7 +3,6 @@
   position: absolute;
   box-sizing: border-box;
   border-radius: 50%;
-  transition: all 1s linear;
 }
 
 .root {
@@ -24,7 +23,6 @@
   margin-top: -42px;
   background-color: rgba(255, 187, 123, 0.1);
   border: 1px solid rgb(255, 153, 58);
-  transition: top 1s linear, left 1s linear;
 }
 
 .healthy {

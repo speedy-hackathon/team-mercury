@@ -28,12 +28,7 @@ export default class App extends React.Component {
   }
 
   changeRadiusStatus(value) {
-    this.setState(state => (
-      {
-        ...state, 
-        isRadiusOn: value,
-      }
-    ));
+    this.setState({isRadiusOn: value});
   }
 
   render() {
