@@ -9,7 +9,7 @@ export default function Person({person, onClick, withInfectionRadius}) {
     return (
       <div className={styles.root} style={{left: `${x}%`, top: `${y}%`}}>
         <div className={withInfectionRadius && isIll ? styles.infectionRadius : ""} />
-        <div className={`${styles.person} ${styles[person.healthStatus.toLowerCase()]}`}
+        <div className={`${styles.person} ${styles[person.healthStatus.toLowerCase()]} ${person.isBored ? styles.bored : null}`}
         onClick={() => onClick(person.id)} />
       </div>
     );
