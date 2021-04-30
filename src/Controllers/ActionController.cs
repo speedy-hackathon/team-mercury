@@ -7,11 +7,7 @@ namespace covidSim.Controllers
     [Route("api/action")]
     public class ActionController : Controller
     {
-        [HttpGet]
-        public void Index()
-        {
-            Game.Restart();
-        }
+        [HttpPost]
         public IActionResult Action([FromBody] UserActionDto userAction)
         {
             var game = Game.Instance;

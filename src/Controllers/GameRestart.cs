@@ -6,7 +6,7 @@ namespace covidSim.Controllers
     [Route("api/restart")]
     public class GameRestart : Controller
     {
-        [HttpGet]
+        [HttpPost]
         public void Index()
         {
             Game.Restart();
