@@ -10,32 +10,42 @@ namespace covidSim.Services
         private static Random random = new Random();
         private PersonState state = PersonState.AtHome;
         private int stateAge = 0;
+        private int Age;
         private const int TimeToBeBored = 5;
         public bool IsBored => state == PersonState.AtHome && stateAge >= TimeToBeBored;
+        public int Id;
+        public int HomeId;
+        public Vec Position;
+        private static readonly int minAge = 0;
+        private static readonly int maxAge = 70;
+        public PersonHealthStatus HealthStatus { get; }
+        private HouseCoordinates houseCoordinates;
 
-        public Person(int id, int homeId, CityMap map, PersonHealthStatus healthStatus)
+
+        public Person(int id, int homeId, CityMap map, PersonHealthStatus healthStatus) : this(id, homeId, map,
+            healthStatus, random.Next(minAge, maxAge))
+        {
+        }
+
+        public Person(int id, int homeId, CityMap map, PersonHealthStatus healthStatus, int age)
         {
             Id = id;
             HomeId = homeId;
             HealthStatus = healthStatus;
+            Age = random.Next(minAge, maxAge);
 
             var homeCoords = map.Houses[homeId].Coordinates.LeftTopCorner;
             houseCoordinates = map.Houses[homeId].Coordinates;
             var x = homeCoords.X + random.Next(HouseCoordinates.Width);
             var y = homeCoords.Y + random.Next(HouseCoordinates.Height);
             Position = new Vec(x, y);
+            Age = age;
         }
-
-        public int Id;
-        public int HomeId;
-        public Vec Position;
-
-        public PersonHealthStatus HealthStatus { get; }
-        private HouseCoordinates houseCoordinates;
 
         public void CalcNextStep()
         {
             var oldState = state;
+            Age++;
             switch (state)
             {
                 case PersonState.AtHome:
@@ -66,8 +76,10 @@ namespace covidSim.Services
             var goingWalk = random.NextDouble() < 0.005;
             if (!goingWalk)
             {
-                var x = random.Next(houseCoordinates.LeftTopCorner.X, houseCoordinates.LeftTopCorner.X + HouseCoordinates.Height);
-                var y = random.Next(houseCoordinates.LeftTopCorner.Y, houseCoordinates.LeftTopCorner.Y + HouseCoordinates.Width);
+                var x = random.Next(houseCoordinates.LeftTopCorner.X,
+                    houseCoordinates.LeftTopCorner.X + HouseCoordinates.Height);
+                var y = random.Next(houseCoordinates.LeftTopCorner.Y,
+                    houseCoordinates.LeftTopCorner.Y + HouseCoordinates.Width);
                 Position = new Vec(x, y);
                 return;
             }
@@ -83,7 +95,7 @@ namespace covidSim.Services
             var direction = ChooseDirection();
             var delta = new Vec(xLength * direction.X, yLength * direction.Y);
             var nextPosition = new Vec(Position.X + delta.X, Position.Y + delta.Y);
-            
+
             if (isCoordInField(nextPosition))
             {
                 Position = nextPosition;
@@ -98,7 +110,8 @@ namespace covidSim.Services
         {
             var game = Game.Instance;
             var homeCoord = game.Map.Houses[HomeId].Coordinates.LeftTopCorner;
-            var homeCenter = new Vec(homeCoord.X + HouseCoordinates.Width / 2, homeCoord.Y + HouseCoordinates.Height / 2);
+            var homeCenter = new Vec(homeCoord.X + HouseCoordinates.Width / 2,
+                homeCoord.Y + HouseCoordinates.Height / 2);
 
             var xDiff = homeCenter.X - Position.X;
             var yDiff = homeCenter.Y - Position.Y;
@@ -115,7 +128,7 @@ namespace covidSim.Services
 
             var direction = new Vec(Math.Sign(xDiff), Math.Sign(yDiff));
 
-            var xLength = Math.Min(xDistance, MaxDistancePerTurn); 
+            var xLength = Math.Min(xDistance, MaxDistancePerTurn);
             var newX = Position.X + xLength * direction.X;
             var yLength = MaxDistancePerTurn - xLength;
             var newY = Position.Y + yLength * direction.Y;
