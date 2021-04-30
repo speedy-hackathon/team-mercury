@@ -161,12 +161,16 @@ namespace covidSim.Services
         private static bool CanHaveInteraction(int maxdistance, Person personA, Person personB)
         {
             
-            var distance = Math.Sqrt((personA.Position.X - personB.Position.X) 
-                                     * (personA.Position.X - personB.Position.X) +
-                                     (personA.Position.Y - personB.Position.Y) * 
-                                     (personA.Position.Y - personB.Position.Y));
-            return distance <= maxdistance;
+            return GetDistance(personA, personB) <= maxdistance;
 
+        }
+
+        private static double GetDistance(Person personA, Person personB)
+        {
+            return Math.Sqrt((personA.Position.X - personB.Position.X) 
+                             * (personA.Position.X - personB.Position.X) +
+                             (personA.Position.Y - personB.Position.Y) * 
+                             (personA.Position.Y - personB.Position.Y));
         }
     }
 }
