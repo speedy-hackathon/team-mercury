@@ -3,6 +3,7 @@
     public enum PersonHealthStatus
     {
         Healthy,
-        Ill
+        Ill,
+        Dead
     }
 }
