@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using covidSim.Models;
 
 namespace covidSim.Services
 {
     public class Game
     {
-        public List<Person> People;
+        public HashSet<Person> People;
         public CityMap Map;
         private DateTime _lastUpdate;
+        private int currentTick;
 
         private static Game _gameInstance;
         private static Random _random = new Random();
@@ -25,13 +27,13 @@ namespace covidSim.Services
         private Game()
         {
             Map = new CityMap();
-            People = CreatePopulation();
+            People = CreatePopulation().ToHashSet();
             _lastUpdate = DateTime.Now;
         }
 
         public static Game Instance => _gameInstance ?? (_gameInstance = new Game());
 
-        private List<Person> CreatePopulation()
+        private IEnumerable<Person> CreatePopulation()
         {
             var illPeoples = (int)Math.Round(IllPeoplePercentage * PeopleCount);
             var doctors = (int)Math.Round(DoctorsPercentage * PeopleCount);
