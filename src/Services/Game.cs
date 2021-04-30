@@ -74,9 +74,43 @@ namespace covidSim.Services
         private void CalcNextStep()
         {
             _lastUpdate = DateTime.Now;
+            var walkingNotInfected = new List<Person>();
+            var walkingInfected = new List<Person>();
             foreach (var person in People)
             {
                 person.CalcNextStep();
+                if (person.state == PersonState.Walking)
+                {
+                    if (person.HealthStatus == PersonHealthStatus.Ill)
+                    {
+                        walkingInfected.Add(person);
+                    }
+                    else
+                    {
+                        walkingNotInfected.Add(person);
+                    }
+                }
+            }
+            CheckInfections(walkingInfected, walkingNotInfected);
+
+        }
+
+        private void CheckInfections(List<Person> walkingInfected, List<Person> walkingNotInfected)
+        {
+            foreach (var notInfected in walkingNotInfected)
+            {
+                foreach (var infected in walkingInfected)
+                {
+                    var distance = Math.Sqrt((notInfected.Position.X - infected.Position.X) 
+                                             * (notInfected.Position.X - infected.Position.X) +
+                                             (notInfected.Position.Y - infected.Position.Y) * 
+                                             (notInfected.Position.Y - infected.Position.Y));
+                    if (distance <= 7 && _random.Next(0, 2) == 1)
+                    {
+                        notInfected.HealthStatus = PersonHealthStatus.Ill;
+                        break;
+                    }
+                }
             }
         }
     }
