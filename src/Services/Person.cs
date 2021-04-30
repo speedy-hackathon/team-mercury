@@ -5,7 +5,7 @@ namespace covidSim.Services
 {
     public class Person
     {
-        private const int MaxDistancePerTurn = 20;
+        private const int MaxDistancePerTurn = 30;
         private static Random random = new Random();
         private PersonState state = PersonState.AtHome;
 
@@ -16,6 +16,7 @@ namespace covidSim.Services
             HealthStatus = healthStatus;
 
             var homeCoords = map.Houses[homeId].Coordinates.LeftTopCorner;
+            houseCoordinates = map.Houses[homeId].Coordinates;
             var x = homeCoords.X + random.Next(HouseCoordinates.Width);
             var y = homeCoords.Y + random.Next(HouseCoordinates.Height);
             Position = new Vec(x, y);
@@ -24,7 +25,9 @@ namespace covidSim.Services
         public int Id;
         public int HomeId;
         public Vec Position;
+
         public PersonHealthStatus HealthStatus { get; }
+        private HouseCoordinates houseCoordinates;
 
         public void CalcNextStep()
         {
@@ -45,7 +48,13 @@ namespace covidSim.Services
         private void CalcNextStepForPersonAtHome()
         {
             var goingWalk = random.NextDouble() < 0.005;
-            if (!goingWalk) return;
+            if (!goingWalk)
+            {
+                var x = random.Next(houseCoordinates.LeftTopCorner.X, houseCoordinates.LeftTopCorner.X + HouseCoordinates.Height);
+                var y = random.Next(houseCoordinates.LeftTopCorner.Y, houseCoordinates.LeftTopCorner.Y + HouseCoordinates.Width);
+                Position = new Vec(x, y);
+                return;
+            }
 
             state = PersonState.Walking;
             CalcNextPositionForWalkingPerson();
