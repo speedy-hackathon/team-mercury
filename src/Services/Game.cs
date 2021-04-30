@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using covidSim.Models;
+using covidSim.Utils;
 
 namespace covidSim.Services
 {
@@ -106,21 +107,21 @@ namespace covidSim.Services
                     peopleToRemove.Add(person);
                     continue;
                 }
+                if (person is Doctor)
+                {
+                    doctors.Add(person);
+                }
 
                 if (person.state == PersonState.Walking)
                 {
                     if (person.HealthStatus == PersonHealthStatus.Ill)
                         walkingInfected.Add(person);
-                    
-                    else if (!(person is Doctor))
+                    else
                         walkingNotInfected.Add(person);
                 }
                 if (person.HealthStatus == PersonHealthStatus.Ill)
                     allInfected.Add(person);
-                else if (person is Doctor)
-                {
-                    doctors.Add(person);
-                }
+
             }
             
             foreach (var person in peopleToRemove)
@@ -137,6 +138,8 @@ namespace covidSim.Services
                 if (CanHaveInteraction(InfectionRadius, doctor, infectedPerson))
                 {
                     infectedPerson.HealthStatus = PersonHealthStatus.Healthy;
+                    if (_random.NextBoolWithChance(1, 5))
+                        doctor.HealthStatus = PersonHealthStatus.Ill;
                 }
             }
         }
