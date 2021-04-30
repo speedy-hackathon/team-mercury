@@ -15,7 +15,9 @@ namespace covidSim.Services
 
         private static Game _gameInstance;
         private static Random _random = new Random();
+        private const int InfectionRadius = 7;
 
+        public const double DoctorsPercentage = 0.1;
         public const double IllPeoplePercentage = 0.05;
         public const int PeopleCount = 320;
         public const int FieldWidth = 1000;
@@ -33,12 +35,26 @@ namespace covidSim.Services
 
         private IEnumerable<Person> CreatePopulation()
         {
-            var illPeoples = Math.Round(IllPeoplePercentage * PeopleCount);
+            var illPeople = (int)Math.Round(IllPeoplePercentage * PeopleCount);
+            var doctors = (int)Math.Round(DoctorsPercentage * PeopleCount);
+            var people = new List<Person>();
 
-            return Enumerable
-                .Range(0, PeopleCount)
-                .Select(index => new Person(index, FindHome(), Map,
-                    illPeoples-- > 0 ? PersonHealthStatus.Ill : PersonHealthStatus.Healthy));
+            for (var i = 0; i < illPeople; i++)
+            {
+                people.Add(new Doctor(i,FindHome(),Map, PersonHealthStatus.Ill));
+            }
+
+            for (var i = 0; i < doctors; i++)
+            {
+                people.Add(new Person(i + illPeople, FindHome(), Map, PersonHealthStatus.Healthy));
+            }
+
+            for (var i = 0; i < PeopleCount - illPeople - doctors; i++)
+            {
+                people.Add(new Person(i + illPeople + doctors, FindHome(), Map, PersonHealthStatus.Healthy));
+            }
+
+            return people;
         }
 
         public static void Restart()
@@ -78,14 +94,16 @@ namespace covidSim.Services
             _lastUpdate = DateTime.Now;
             var walkingNotInfected = new List<Person>();
             var walkingInfected = new List<Person>();
-            var personsToRemove = new List<Person>();
+            var allInfected = new List<Person>();
+            var doctors = new List<Person>();
+            var peopleToRemove = new List<Person>();
             foreach (var person in People)
             {
                 person.CalcNextStep(currentTick);
 
                 if (person.ShouldRemove(currentTick))
                 {
-                    personsToRemove.Add(person);
+                    peopleToRemove.Add(person);
                     continue;
                 }
 
@@ -93,33 +111,64 @@ namespace covidSim.Services
                 {
                     if (person.HealthStatus == PersonHealthStatus.Ill)
                         walkingInfected.Add(person);
-                    else
+                    
+                    else if (!(person is Doctor))
                         walkingNotInfected.Add(person);
                 }
+                if (person.HealthStatus == PersonHealthStatus.Ill)
+                    allInfected.Add(person);
+                else if (person is Doctor)
+                {
+                    doctors.Add(person);
+                }
             }
-
-            foreach (var person in personsToRemove)
+            
+            foreach (var person in peopleToRemove)
                 People.Remove(person);
             CheckInfections(walkingInfected, walkingNotInfected);
+            CheckRecovery(doctors, allInfected);
         }
 
+        private void CheckRecovery(List<Person> doctors, List<Person> allInfected)
+        {
+            foreach (var doctor in doctors)
+            foreach (var infectedPerson in allInfected)
+            {
+                if (CanHaveInteraction(InfectionRadius, doctor, infectedPerson))
+                {
+                    infectedPerson.HealthStatus = PersonHealthStatus.Healthy;
+                }
+            }
+        }
+        
         private static void CheckInfections(List<Person> walkingInfected, List<Person> walkingNotInfected)
         {
             foreach (var notInfected in walkingNotInfected)
+            foreach (var infected in walkingInfected)
             {
-                foreach (var infected in walkingInfected)
+                if (CanHaveInteraction(InfectionRadius, notInfected, infected) 
+                    && _random.NextBoolWithChance(1, 2))
                 {
-                    var distance = Math.Sqrt((notInfected.Position.X - infected.Position.X) 
-                                             * (notInfected.Position.X - infected.Position.X) +
-                                             (notInfected.Position.Y - infected.Position.Y) * 
-                                             (notInfected.Position.Y - infected.Position.Y));
-                    if (distance <= 7 && _random.Next(0, 2) == 1)
-                    {
-                        notInfected.HealthStatus = PersonHealthStatus.Ill;
-                        break;
-                    }
+                    notInfected.HealthStatus = PersonHealthStatus.Ill;
+                    break;
+                    
                 }
             }
+        }
+
+        private static bool CanHaveInteraction(int maxdistance, Person personA, Person personB)
+        {
+            
+            return GetDistance(personA, personB) <= maxdistance;
+
+        }
+
+        private static double GetDistance(Person personA, Person personB)
+        {
+            return Math.Sqrt((personA.Position.X - personB.Position.X) 
+                             * (personA.Position.X - personB.Position.X) +
+                             (personA.Position.Y - personB.Position.Y) * 
+                             (personA.Position.Y - personB.Position.Y));
         }
     }
 }

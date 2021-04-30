@@ -9,7 +9,9 @@ namespace covidSim.Services
     {
         private const int MaxDistancePerTurn = 30;
         private static Random random = new Random();
+        public PersonState state = PersonState.AtHome;
         private int stateAge = 0;
+        public PersonType PersonType = PersonType.CommonPerson;
         private int Age;
         private const int TimeToBeBored = 5;
         private const int CureTime = 45;
