@@ -1,5 +1,6 @@
 using System;
 using covidSim.Models;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace covidSim.Services
 {
@@ -23,6 +24,7 @@ namespace covidSim.Services
         public int Id;
         public int HomeId;
         public Vec Position;
+        public HealthStatus HealthStatus { get; }
 
         public void CalcNextStep()
         {
