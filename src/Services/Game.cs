@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using covidSim.Models;
 
 namespace covidSim.Services
 {
     public class Game
     {
-        public List<Person> People;
+        public HashSet<Person> People;
         public CityMap Map;
         private DateTime _lastUpdate;
+        private int currentTick;
 
         private static Game _gameInstance;
         private static Random _random = new Random();
@@ -24,13 +26,13 @@ namespace covidSim.Services
         private Game()
         {
             Map = new CityMap();
-            People = CreatePopulation();
+            People = CreatePopulation().ToHashSet();
             _lastUpdate = DateTime.Now;
         }
 
         public static Game Instance => _gameInstance ?? (_gameInstance = new Game());
 
-        private List<Person> CreatePopulation()
+        private IEnumerable<Person> CreatePopulation()
         {
             var illPeoples = (int)Math.Round(IllPeoplePercentage * PeopleCount);
             var doctors = (int) Math.Round(DoctorsPercentage * PeopleCount);
@@ -79,32 +81,40 @@ namespace covidSim.Services
             var diff = (DateTime.Now - _lastUpdate).TotalMilliseconds;
             if (diff >= 1000)
             {
-                CalcNextStep();
+                var currentTick = Interlocked.Increment(ref this.currentTick);
+                CalcNextStep(currentTick);
             }
 
             return this;
         }
 
-        private void CalcNextStep()
+        private void CalcNextStep(int currentTick)
         {
             _lastUpdate = DateTime.Now;
             var walkingNotInfected = new List<Person>();
             var walkingInfected = new List<Person>();
             var allInfected = new List<Person>();
             var doctors = new List<Person>();
+            var personsToRemove = new List<Person>();
             foreach (var person in People)
             {
-                person.CalcNextStep();
+                person.CalcNextStep(currentTick);
+
+                if (person.ShouldRemove(currentTick))
+                {
+                    personsToRemove.Add(person);
+                    continue;
+                }
+
                 if (person.state == PersonState.Walking)
                 {
                     if (person.HealthStatus == PersonHealthStatus.Ill)
-                    {
                         walkingInfected.Add(person);
                     }
                     else if (!(person is Doctor))
                     {
+                    else
                         walkingNotInfected.Add(person);
-                    }
                 }
                 if (person.HealthStatus == PersonHealthStatus.Ill)
                     allInfected.Add(person);
@@ -115,7 +125,9 @@ namespace covidSim.Services
             }
             CheckInfections(walkingInfected, walkingNotInfected);
             CheckRecovery(doctors, allInfected);
-
+            foreach (var person in personsToRemove)
+                People.Remove(person);
+            CheckInfections(walkingInfected, walkingNotInfected);
         }
 
         private void CheckRecovery(List<Person> doctors, List<Person> allInfected)
@@ -131,6 +143,7 @@ namespace covidSim.Services
         }
 
         private void CheckInfections(List<Person> walkingInfected, List<Person> walkingNotInfected)
+        private static void CheckInfections(List<Person> walkingInfected, List<Person> walkingNotInfected)
         {
             foreach (var notInfected in walkingNotInfected)
             {
