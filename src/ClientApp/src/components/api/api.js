@@ -1,4 +1,6 @@
+import {gameRestartUrl} from "../../consts/urls";
+
 export const restartGameRequest = async () => {
-    const responce = await fetch('https://localhost:5001/api/restart', {method:"POST"});
-    return responce;
+    const response = await fetch(gameRestartUrl, {method:"POST"});
+    return response;
 }
