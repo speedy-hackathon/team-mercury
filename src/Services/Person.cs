@@ -9,7 +9,6 @@ namespace covidSim.Services
     {
         private const int MaxDistancePerTurn = 30;
         private static Random random = new Random();
-        private PersonState state = PersonState.AtHome;
         private int stateAge = 0;
         private const int TimeToBeBored = 5;
         public bool IsBored => state == PersonState.AtHome && stateAge >= TimeToBeBored;
@@ -44,6 +43,8 @@ namespace covidSim.Services
             UpdateHealthStatus(currentTick);
 
             if (HealthStatus != PersonHealthStatus.Dead)
+            {
+                var oldState = state;
                 switch (state)
                 {
                     case PersonState.AtHome:
@@ -56,12 +57,13 @@ namespace covidSim.Services
                         CalcNextPositionForGoingHomePerson();
                         break;
                 }
+                UpdateStatusAge(oldState);
+            }
+
         }
 
         public bool ShouldRemove(int currentTick)
         {
-            var oldState = state;
-            switch (state)
             return HealthStatus == PersonHealthStatus.Dead && currentTick > deadAtTick + 10;
         }
 
@@ -79,7 +81,6 @@ namespace covidSim.Services
                 if (illTick >= CureTime) HealthStatus = PersonHealthStatus.Healthy;
             }
 
-            UpdateStatusAge(oldState);
         }
 
         private void UpdateStatusAge(PersonState oldState)
