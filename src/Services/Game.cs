@@ -86,7 +86,6 @@ namespace covidSim.Services
                     }
                 }
             }
-            Console.WriteLine(walkingInfected.Count);
             CheckInfections(walkingInfected, walkingNotInfected);
 
         }
@@ -101,13 +100,10 @@ namespace covidSim.Services
                                              * (notInfected.Position.X - infected.Position.X) +
                                              (notInfected.Position.Y - infected.Position.Y) * 
                                              (notInfected.Position.Y - infected.Position.Y));
-                    if (distance <= 7)
+                    if (distance <= 7 && _random.Next(0, 2) == 1)
                     {
-                        if (_random.Next(0, 2) == 1)
-                        {
-                            notInfected.HealthStatus = PersonHealthStatus.Ill;
-                            break;
-                        }
+                        notInfected.HealthStatus = PersonHealthStatus.Ill;
+                        break;
                     }
                 }
             }
