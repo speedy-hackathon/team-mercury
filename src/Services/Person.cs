@@ -26,6 +26,7 @@ namespace covidSim.Services
         public int Id;
         public int HomeId;
         public Vec Position;
+        public PersonType PersonType = PersonType.CommonPerson;
 
 
         public PersonHealthStatus HealthStatus { get; set; }
