@@ -13,7 +13,7 @@ namespace covidSim.Services
         public CityMap Map;
         private DateTime _lastUpdate;
         private int currentTick;
-        private const int RadiusInfection = 7;
+        private const int InfectionRadius = 7;
     
         private static Game _gameInstance;
         private static Random _random = new Random();
@@ -136,7 +136,7 @@ namespace covidSim.Services
             foreach (var doctor in doctors)
             foreach (var infectedPerson in allInfected)
             {
-                if (CanHaveInteraction(RadiusInfection, doctor, infectedPerson))
+                if (CanHaveInteraction(InfectionRadius, doctor, infectedPerson))
                 {
                     infectedPerson.HealthStatus = PersonHealthStatus.Healthy;
                 }
@@ -148,7 +148,7 @@ namespace covidSim.Services
             foreach (var notInfected in walkingNotInfected)
             foreach (var infected in walkingInfected)
             {
-                if (CanHaveInteraction(RadiusInfection, notInfected, infected) 
+                if (CanHaveInteraction(InfectionRadius, notInfected, infected) 
                     && _random.NextBoolWithChance(1, 2))
                 {
                     notInfected.HealthStatus = PersonHealthStatus.Ill;
