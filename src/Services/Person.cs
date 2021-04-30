@@ -1,5 +1,6 @@
 using System;
 using covidSim.Models;
+using covidSim.Utils;
 
 namespace covidSim.Services
 {
@@ -7,8 +8,9 @@ namespace covidSim.Services
     {
         private const int MaxDistancePerTurn = 30;
         private static Random random = new Random();
+        public PersonState state = PersonState.AtHome;
+        private HouseCoordinates houseCoordinates;
         private int illSteps;
-        private PersonState state = PersonState.AtHome;
 
         public Person(int id, int homeId, CityMap map, PersonHealthStatus healthStatus)
         {
@@ -23,29 +25,43 @@ namespace covidSim.Services
             Position = new Vec(x, y);
         }
 
-        public int Id;
-        public int HomeId;
+        public readonly int Id;
+        public readonly int HomeId;
         public Vec Position;
 
-        public PersonHealthStatus HealthStatus { get; private set; }
-        private HouseCoordinates houseCoordinates;
+        public PersonHealthStatus HealthStatus { get; set; }
+        private int deadAtTick = 0;
 
-        public void CalcNextStep()
+        public void CalcNextStep(int currentTick)
         {
-            if (HealthStatus == PersonHealthStatus.Ill) illSteps++;
-            if (illSteps >= 45) HealthStatus = PersonHealthStatus.Healthy;
+            UpdateHealthStatus(currentTick);
 
-            switch (state)
+            if (HealthStatus != PersonHealthStatus.Dead)
+                switch (state)
+                {
+                    case PersonState.AtHome:
+                        CalcNextStepForPersonAtHome();
+                        break;
+                    case PersonState.Walking:
+                        CalcNextPositionForWalkingPerson();
+                        break;
+                    case PersonState.GoingHome:
+                        CalcNextPositionForGoingHomePerson();
+                        break;
+                }
+        }
+
+        public bool ShouldRemove(int currentTick)
+        {
+            return HealthStatus == PersonHealthStatus.Dead && currentTick > deadAtTick + 10;
+        }
+
+        private void UpdateHealthStatus(int currentTick)
+        {
+            if (HealthStatus == PersonHealthStatus.Ill && random.NextBoolWithChance(3, 100000))
             {
-                case PersonState.AtHome:
-                    CalcNextStepForPersonAtHome();
-                    break;
-                case PersonState.Walking:
-                    CalcNextPositionForWalkingPerson();
-                    break;
-                case PersonState.GoingHome:
-                    CalcNextPositionForGoingHomePerson();
-                    break;
+                HealthStatus = PersonHealthStatus.Dead;
+                deadAtTick = currentTick;
             }
         }
 
@@ -54,10 +70,8 @@ namespace covidSim.Services
             var goingWalk = random.NextDouble() < 0.005;
             if (!goingWalk)
             {
-                var x = random.Next(houseCoordinates.LeftTopCorner.X,
-                    houseCoordinates.LeftTopCorner.X + HouseCoordinates.Height);
-                var y = random.Next(houseCoordinates.LeftTopCorner.Y,
-                    houseCoordinates.LeftTopCorner.Y + HouseCoordinates.Width);
+                var x = random.Next(houseCoordinates.LeftTopCorner.X, houseCoordinates.LeftTopCorner.X + HouseCoordinates.Height);
+                var y = random.Next(houseCoordinates.LeftTopCorner.Y, houseCoordinates.LeftTopCorner.Y + HouseCoordinates.Width);
                 Position = new Vec(x, y);
                 return;
             }
@@ -88,8 +102,7 @@ namespace covidSim.Services
         {
             var game = Game.Instance;
             var homeCoord = game.Map.Houses[HomeId].Coordinates.LeftTopCorner;
-            var homeCenter = new Vec(homeCoord.X + HouseCoordinates.Width / 2,
-                homeCoord.Y + HouseCoordinates.Height / 2);
+            var homeCenter = new Vec(homeCoord.X + HouseCoordinates.Width / 2, homeCoord.Y + HouseCoordinates.Height / 2);
 
             var xDiff = homeCenter.X - Position.X;
             var yDiff = homeCenter.Y - Position.Y;
@@ -106,7 +119,7 @@ namespace covidSim.Services
 
             var direction = new Vec(Math.Sign(xDiff), Math.Sign(yDiff));
 
-            var xLength = Math.Min(xDistance, MaxDistancePerTurn);
+            var xLength = Math.Min(xDistance, MaxDistancePerTurn); 
             var newX = Position.X + xLength * direction.X;
             var yLength = MaxDistancePerTurn - xLength;
             var newY = Position.Y + yLength * direction.Y;
@@ -120,6 +133,8 @@ namespace covidSim.Services
             state = PersonState.GoingHome;
             CalcNextPositionForGoingHomePerson();
         }
+
+        public override int GetHashCode() => Id;
 
         private Vec ChooseDirection()
         {
