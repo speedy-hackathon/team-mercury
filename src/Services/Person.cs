@@ -1,6 +1,5 @@
 using System;
 using covidSim.Models;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace covidSim.Services
 {
@@ -10,10 +9,11 @@ namespace covidSim.Services
         private static Random random = new Random();
         private PersonState state = PersonState.AtHome;
 
-        public Person(int id, int homeId, CityMap map)
+        public Person(int id, int homeId, CityMap map, PersonHealthStatus healthStatus)
         {
             Id = id;
             HomeId = homeId;
+            HealthStatus = healthStatus;
 
             var homeCoords = map.Houses[homeId].Coordinates.LeftTopCorner;
             var x = homeCoords.X + random.Next(HouseCoordinates.Width);
@@ -24,7 +24,7 @@ namespace covidSim.Services
         public int Id;
         public int HomeId;
         public Vec Position;
-        public HealthStatus HealthStatus { get; }
+        public PersonHealthStatus HealthStatus { get; }
 
         public void CalcNextStep()
         {
